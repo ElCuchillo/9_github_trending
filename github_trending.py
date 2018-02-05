@@ -1,12 +1,17 @@
-import requests
+requests
 from datetime import date, timedelta
 
 
-def get_trending_repositories(top_size, age):
-    url = 'https://api.github.com/search/repositories?' \
-          'q=created:>{}&sort=stars&order=desc'.\
-          format(str(date.today() - timedelta(days=age)))
-    repos_list = requests.get(url).json()['items'][:top_size]
+def get_trending_repositories(top_size=20, age=7):
+    url = 'https://api.github.com/search/repositories'
+    payload = {'q': 'created:>{}'.
+               format(str(date.today() - timedelta(days=age))),
+               'sort': 'star',
+               'order': 'desc',
+               'page': '1',
+               'per_page': top_size
+              }
+    repos_list = requests.get(url, params=payload).json()['items']
     return repos_list
 
 
@@ -17,7 +22,7 @@ def get_open_issues_list(repo):
     return issues_url_list
 
 
-def output_issues_info(repos_list):
+def output_results(repos_list):
     for n, repo in enumerate(repos_list):
         print('\n№{} repository: {}, owner: {}'.
               format(n+1, repo['name'], repo['owner']['login']))
@@ -25,13 +30,11 @@ def output_issues_info(repos_list):
         print('Open issues amount: {}'.format(len(issues_url_list)))
         if len(issues_url_list):
             for url in issues_url_list:
-               print(url)
+                print(url)
 
 
 if __name__ == '__main__':
-    top_size = 20
-    age = 7
-    repos_list = get_trending_repositories(top_size, age)
-    print('Top-{} repositories for last {} days on {}'.
-          format(top_size, age, date.today()))
-    output_issues_info(repos_list)
+    repos_list = get_trending_repositories()
+    print('Top-20 repositories for last 7 days on {}'.
+          format( date.today()))
+    output_results(repos_list)
